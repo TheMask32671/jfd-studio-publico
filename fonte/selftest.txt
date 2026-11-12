@@ -1,0 +1,11 @@
+OK    FFmpeg — C:\hostedtoolcache\windows\Python\3.11.9\x64\Lib\site-packages\imageio_ffmpeg\binaries\ffmpeg-win-x86_64-v9.0.2.exe
+OK    Qt — PySide6 6.9.3
+OK    Pipeline (análise, remasterização, transcrição, MIDI) — 120.2 BPM, Dó maior, 4 instrumento(s), linhas: other, 1 partitura(s)
+OK    Telas — 7 abas, 1 partitura(s) na lista
+OK    Verovio (partitura na tela) — Verovio 6.4.1[undefined], 1 página(s), 39 símbolos
+OK    PDF da partitura — Verovio, 44885 bytes
+OK    Saída de som (PortAudio) — PortAudio PortAudio V19.7.0-devel, revision unknown
+OK    Motor de separação (PyTorch + Demucs) — torch 2.2.2+cpu
+OK    Separação de um trecho com o modelo de IA — drums -9.5 dB, bass -42.8 dB, other -0.5 dB, vocals -42.5 dB
+
+RESULTADO: SUCESSO
