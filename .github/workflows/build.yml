@@ -1,0 +1,107 @@
+name: Montar instalador do JFD
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  windows:
+    runs-on: windows-latest
+    timeout-minutes: 90
+    env:
+      QT_QPA_PLATFORM: offscreen
+      QT_QPA_FONTDIR: C:\Windows\Fonts
+      PYTHONUTF8: "1"
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+          cache: pip
+
+      - name: Instalar dependências
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt pyinstaller pytest
+
+      - name: Testes do núcleo
+        run: python -m pytest tests -q
+
+      - name: Baixar e conferir os modelos de IA
+        run: python -m jfd.core.models --fetch modelos
+
+      - name: Autoteste pelo código-fonte
+        shell: pwsh
+        run: |
+          New-Item -ItemType Directory -Force out\fonte | Out-Null
+          python run_jfd.py --selftest "$env:GITHUB_WORKSPACE\out\fonte\selftest.txt" --full
+
+      - name: Empacotar com PyInstaller
+        run: pyinstaller jfd.spec --noconfirm
+
+      - name: Autoteste do programa empacotado
+        shell: pwsh
+        run: |
+          New-Item -ItemType Directory -Force out\empacotado | Out-Null
+          $report = "$env:GITHUB_WORKSPACE\out\empacotado\selftest.txt"
+          $p = Start-Process -FilePath "dist\JFD\JFD.exe" -ArgumentList "--selftest", "`"$report`"", "--full" -Wait -PassThru
+          if (Test-Path $report) { Get-Content $report -Encoding utf8 } else { Write-Host "O autoteste não gerou relatório." }
+          foreach ($f in "saida.log", "jfd.log") {
+            $path = Join-Path $env:APPDATA "JFD\$f"
+            if (Test-Path $path) { Write-Host "----- $f -----"; Get-Content $path -Encoding utf8 -Tail 80 }
+          }
+          if ($p.ExitCode -ne 0) { Write-Error "Autoteste do programa empacotado falhou (código $($p.ExitCode))."; exit 1 }
+
+      - name: Montar o instalador (Inno Setup)
+        shell: pwsh
+        run: |
+          choco upgrade innosetup -y --no-progress
+          $version = (python -c "import jfd; print(jfd.__version__)").Trim()
+          & "${env:ProgramFiles(x86)}\Inno Setup 6\ISCC.exe" "/DAppVersion=$version" installer\jfd.iss
+          if ($LASTEXITCODE -ne 0) { exit 1 }
+          "JFD_VERSION=$version" | Out-File -FilePath $env:GITHUB_ENV -Append -Encoding utf8
+
+      - name: Publicar relatórios do autoteste no ramo "autoteste"
+        if: always()
+        continue-on-error: true
+        shell: pwsh
+        run: |
+          if (!(Test-Path out)) { exit 0 }
+          Set-Location out
+          git init -q -b autoteste
+          git config user.name "github-actions"
+          git config user.email "github-actions@users.noreply.github.com"
+          git add -A
+          git commit -q -m "Relatórios do autoteste (montagem ${{ github.run_number }})"
+          git push -f "https://x-access-token:${{ github.token }}@github.com/${{ github.repository }}" autoteste
+
+      - name: Guardar relatórios do autoteste
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: autoteste
+          path: out/
+          if-no-files-found: ignore
+
+      - name: Guardar o instalador
+        uses: actions/upload-artifact@v4
+        with:
+          name: JFD_Setup
+          path: dist/JFD_Setup.exe
+          compression-level: 0
+
+      - name: Publicar em Releases
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: v${{ env.JFD_VERSION }}-build${{ github.run_number }}
+          name: JFD ${{ env.JFD_VERSION }} (montagem ${{ github.run_number }})
+          body: |
+            Instalador para Windows 10/11 de 64 bits.
+            Baixe o arquivo **JFD_Setup.exe**, abra e siga os passos.
+            Os modelos de inteligência artificial já vêm incluídos: depois de instalado, funciona sem internet.
+          files: dist/JFD_Setup.exe

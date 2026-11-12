@@ -1,0 +1,19 @@
+JFD – Intelligent Audio Studio
+Termos de uso
+
+1. O JFD processa suas músicas no seu próprio computador. Nenhuma gravação é enviada
+   para servidores externos. Os modelos de inteligência artificial já vêm instalados
+   e o programa funciona sem conexão com a internet.
+
+2. Suas músicas e projetos não são usados para treinar modelos.
+
+3. A separação de instrumentos, a remasterização e a transcrição em partitura são
+   automáticas e podem conter erros. Confira os resultados antes de utilizá-los
+   profissionalmente. O arquivo original nunca é alterado.
+
+4. Você é responsável por ter o direito de usar as gravações que processar.
+
+5. O programa é fornecido "como está", sem garantias de qualquer tipo.
+
+6. O JFD utiliza componentes de terceiros, cada um com a sua licença. A lista está no
+   arquivo AVISOS-DE-TERCEIROS.md, instalado junto com o programa.

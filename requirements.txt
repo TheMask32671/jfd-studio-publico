@@ -1,0 +1,13 @@
+# JFD – Intelligent Audio Studio (Python 3.11, Windows 64 bits)
+numpy==1.26.4
+scipy>=1.11,<1.16
+PySide6-Essentials>=6.7,<6.10
+sounddevice>=0.4.6
+imageio-ffmpeg>=0.5.1
+verovio>=4.3
+certifi
+# Separação de instrumentos (CPU). Versões fixadas: combinação conhecida com o Demucs 4.0.1
+# (o Demucs 4.0.1 não carrega os modelos no PyTorch 2.6 ou mais novo).
+torch==2.2.2
+torchaudio==2.2.2
+demucs==4.0.1
